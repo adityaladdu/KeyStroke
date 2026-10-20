@@ -33,7 +33,10 @@
 html,
 body {
   margin: 0;
+  width: 100%;
+  max-width: 100%;
 }
+html { overflow-x: clip; }
 body {
   background: var(--bg);
   color: var(--tx);
@@ -121,6 +124,7 @@ nav button.on {
   color: var(--tx);
   background: var(--el);
 }
+#navToggle { display: none; }
 main {
   max-width: 980px;
   margin: 0 auto;
@@ -322,6 +326,7 @@ table {
   border-collapse: collapse;
   font-size: 14px;
 }
+svg { max-width: 100%; }
 th,
 td {
   text-align: left;
@@ -446,6 +451,52 @@ th {
 .mini-game-settings { max-width: 760px; }
 .mini-game-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .mini-game-settings select { min-width: 220px; }
+.focus-mode header { max-height: 0; padding-block: 0; border: 0; overflow: hidden; opacity: 0; transition: max-height .18s ease, opacity .18s ease, padding .18s ease; }
+.focus-mode #main > .row[role="group"], .focus-mode #main > .sp,
+.focus-mode #main > .row:not([role="group"]), .focus-mode #main > .hint:not(#hint),
+.focus-mode #main > #miniGameTrack { display: none !important; }
+body:not(.focus-mode) header { transition: max-height .18s ease, opacity .18s ease, padding .18s ease; }
+.table-scroll { max-width: 100%; overflow-x: auto; }
+@media (max-width: 700px) {
+  body { min-width: 0; }
+  header { position: relative; gap: 8px; padding: 8px 12px; min-height: 56px; }
+  .logo { font-size: 15px; }
+  #navToggle { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; min-height: 44px; margin-left: auto; }
+  header > .row { margin-left: 0; }
+  #nav { display: none; position: absolute; z-index: 20; top: 100%; right: 8px; left: 8px; flex-direction: column; gap: 2px; padding: 8px; border: 1px solid var(--bd); border-radius: 10px; background: var(--bg2); box-shadow: 0 8px 24px rgba(0,0,0,.22); }
+  #nav.open { display: flex; }
+  #nav button { width: 100%; min-height: 44px; padding: 10px 12px; text-align: left; }
+  main { width: 100%; min-width: 0; padding: 20px 12px calc(24px + env(safe-area-inset-bottom, 0px)); }
+  #main > *, .row > *, .set > * { min-width: 0; max-width: 100%; }
+  .row { gap: 8px; }
+  .row button, .row select, .row input:not([type="range"]) { min-height: 44px; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 20px 0 12px; }
+  .stat b { font-size: clamp(22px, 7vw, 30px); overflow-wrap: anywhere; }
+  #box { height: clamp(112px, 24vh, 160px); padding: 8px 0; }
+  #txt { font-size: clamp(18px, 5.2vw, 22px); line-height: 1.8; }
+  .grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  #tg.grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  #tg .card { padding: 8px; overflow-wrap: anywhere; }
+  .set { align-items: flex-start; gap: 8px; }
+  .set > span, .set > label { flex: 1 1 100%; }
+  input[type="range"] { width: min(100%, 220px); min-height: 32px; }
+  .auth-card, .auth-user, .auth-actions { align-items: flex-start; }
+  .auth-card { padding: 12px; }
+  .auth-actions { width: 100%; }
+  .personal-profile-head { min-width: 0; }
+  .sound-assignments { grid-template-columns: minmax(0, 1fr); }
+  .sound-card-controls { justify-content: flex-start; }
+  .mini-game-panel, .mini-game-settings { padding: 12px; }
+  .mini-game-settings select { min-width: 0; width: 100%; }
+  .modal { align-items: flex-end; padding: 8px; }
+  .panel { max-height: min(88dvh, 760px); padding: 16px; border-radius: 14px; }
+  .panel .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .panel .row button { flex: 1 1 42%; }
+  table { display: block; max-width: 100%; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+  th, td { padding: 8px 6px; }
+  .avatar-upload-label { width: 100%; flex-wrap: wrap; }
+  .avatar-upload-label input { max-width: 100%; margin: 6px 0 0; }
+}
 .sr {
   position: absolute;
   left: -9999px;

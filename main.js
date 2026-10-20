@@ -43,6 +43,10 @@ const DEF = {
   celebrationIntensity: "balanced",
   celebrationAutoDismiss: true,
   celebrationMinImprovement: 1,
+  distractionFree: true,
+  focusIdle: 1800,
+  errorSound: "off",
+  timeWarning: 0,
 };
 let P = Object.assign({}, DEF, ls.get(K.p, {}));
 if (typeof P.pv !== "object" || !P.pv) P.pv = {};
@@ -216,6 +220,8 @@ PRE.push(
     ["razer-green", "Razer Green", "Switches", "A bright, clicky switch approximation.", { b: 235, nz: 3600, dc: 0.05, click: 1.15 }],
     ["tealios-v2", "Tealios V2", "Switches", "A smooth, clean linear switch approximation.", { b: 195, nz: 1850, dc: 0.045, g: 0.9 }],
     ["trust-gxt", "Trust GXT", "Switches", "A fuller, mid-pitched gaming keyboard approximation.", { b: 175, nz: 2100, dc: 0.06, click: 0.45, bump: 0.5 }],
+    ["damage", "Damage", "Errors", "A short low impact cue for incorrect keys.", { effect: "damage" }],
+    ["missed-punch", "Missed Punch", "Errors", "A brief airy impact cue for incorrect keys.", { effect: "missed-punch" }],
   ].map(([id, n, c, d, sound]) => ({ id, n, c, d, b: 170, nz: 1800, dc: 0.05, ...sound })),
 );
 const INT = {
@@ -385,6 +391,8 @@ const Snd = {
       case "punch": noise(180, 0.09, 0.55, "lowpass"); tone(105, "triangle", 0.11, 48, 0.65); break;
       case "rubber": noise(560, 0.03, 0.25, "lowpass"); tone(170, "sine", 0.07, 105, 0.55); break;
       case "fart": tone(105, "sawtooth", 0.17, 52, 0.62); break;
+      case "damage": tone(125, "triangle", 0.12, 55, 0.7); noise(420, 0.06, 0.25, "lowpass"); break;
+      case "missed-punch": noise(300, 0.08, 0.45, "bandpass"); tone(95, "sine", 0.08, 58, 0.4); break;
     }
   },
 };
@@ -456,6 +464,15 @@ const T = {
   resizeObserver: null,
   layoutFrame: 0,
 };
+let warningPlayed = false;
+let focusTimer = 0;
+function setFocusMode(active) {
+  clearTimeout(focusTimer);
+  document.body.classList.toggle("focus-mode", Boolean(active && P.distractionFree && T.st === "running"));
+  if (document.body.classList.contains("focus-mode")) {
+    focusTimer = setTimeout(() => document.body.classList.remove("focus-mode"), Math.max(500, Number(P.focusIdle) || 1800));
+  }
+}
 // WPM = correct chars / 5 / minutes; raw = all typed chars / 5 / minutes; accuracy = correct keystrokes / total keystrokes (backspace not counted).
 const el = (h) => {
   const d = document.createElement("div");
@@ -483,6 +500,8 @@ function metrics(sec) {
 }
 function newTest() {
   clearInterval(T.iv);
+  warningPlayed = false;
+  setFocusMode(false);
   Object.assign(T, {
     st: "idle",
     text: genText(),
@@ -577,6 +596,7 @@ function press(ch) {
   const ok = ch === T.text[i];
   if (ok) T.okKs++;
   T.typed.push(ch);
+  setFocusMode(true);
   const s = T.spans[i];
   s.className = ok ? "c" : "w";
   mark(i + 1);
@@ -593,6 +613,11 @@ function back() {
 }
 function tick() {
   const e = elapsed();
+  const remaining = P.dur - e;
+  if (P.mode === "time" && P.timeWarning && !warningPlayed && remaining <= P.timeWarning && remaining > 0) {
+    warningPlayed = true;
+    Snd.play(true, "beep");
+  }
   if (P.mode === "time" && e >= P.dur) {
     finish();
     return;
@@ -633,6 +658,7 @@ function qualifiesForCelebration(currentWpm, previousWpm, enabled, threshold) {
 function finish() {
   if (T.st !== "running") return;
   clearInterval(T.iv);
+  setFocusMode(false);
   let e = elapsed();
   if (P.mode === "time") e = Math.min(e, P.dur);
   T.st = "completed";
@@ -800,11 +826,13 @@ function confirmBox(msg, fn) {
 let view = "test";
 const VIEWS = [
   ["test", "Test"],
+  ["leaderboard", "Leaderboard"],
   ["studio", "Sound Studio"],
   ["stats", "Statistics"],
   ["settings", "Settings"],
 ];
 function go(v) {
+  setFocusMode(false);
   if (T.st === "running") {
     clearInterval(T.iv);
     T.st = "aborted";
@@ -820,6 +848,8 @@ function drawNav() {
   $("#nav")
     .querySelectorAll("button")
     .forEach((b) => (b.onclick = () => go(b.dataset.v)));
+  $("#nav").classList.remove("open");
+  $("#navToggle").setAttribute("aria-expanded", "false");
   $("#bMute").style.opacity = P.mute ? 0.4 : 1;
   $("#bMute").setAttribute("aria-pressed", P.mute);
 }
@@ -835,6 +865,7 @@ const presetSel = (id) =>
     "Effects",
     "Waveforms",
     "Switches",
+    "Errors",
     "Soft",
     "Linear",
     "Tactile",
@@ -851,7 +882,7 @@ const presetSel = (id) =>
 function draw() {
   drawNav();
   document.documentElement.dataset.theme = P.theme;
-  ({ test: dTest, studio: dStudio, stats: dStats, settings: dSettings, game: () => window.KEYSTROKE_GAME?.renderSection?.() })[
+  ({ test: dTest, leaderboard: dLeaderboard, studio: dStudio, stats: dStats, settings: dSettings, game: () => window.KEYSTROKE_GAME?.renderSection?.() })[
     view
   ]();
   if (view === "test") {
@@ -861,6 +892,9 @@ function draw() {
     }
     focusInput();
   }
+}
+function dLeaderboard() {
+  $("#main").innerHTML = `<h2 style="margin-top:0">Leaderboard</h2><section class="empty" role="status"><b>Shared rankings aren’t connected yet.</b><p>This app currently saves typing history on this device. Google sign-in does not provide public score storage, so no global or friends rankings are shown.</p><p>Connect a secured, user-scoped shared data service before publishing leaderboard entries.</p></section>`;
 }
 function dTest() {
   const tm = [
@@ -967,7 +1001,7 @@ function dStudio() {
       .join("")}</div>`;
   $("#main").innerHTML =
     `<h2 style="margin-top:0">Sound Studio</h2><p style="color:var(--tx2)">Compare switch profiles without starting a test. Audio only plays when you press a button. Profiles are descriptive, not official or exact reproductions; sounds are generated with Web Audio.</p>
- ${grp("Effects")}${grp("Waveforms")}${grp("Switches")}${grp("Soft")}${grp("Linear")}${grp("Tactile")}${grp("Clicky")}
+ ${grp("Effects")}${grp("Waveforms")}${grp("Switches")}${grp("Errors")}${grp("Soft")}${grp("Linear")}${grp("Tactile")}${grp("Clicky")}
  <h2>A/B comparison</h2><div class="row"><select id="abA" aria-label="Profile A">${opt(
    PRE.map((p) => [p.id, p.n]),
    AB[0],
@@ -1132,6 +1166,10 @@ function dSettings() {
    )}</select>`,
  )}
  ${row("Press sound", `<input type="checkbox" id="a7" ${P.press ? "checked" : ""}>`)}${row("Release sound", `<input type="checkbox" id="a8" ${P.release ? "checked" : ""}>`)}
+ ${row("Incorrect-key sound", `<select id="errorSound">${opt([["off", "Off"], ["damage", "Damage"], ["triangle", "Triangle"], ["square", "Square"], ["missed-punch", "Missed Punch"]], P.errorSound)}</select>`)}
+ ${row("End-of-test warning", `<select id="timeWarning">${opt([[0, "Off"], [1, "1 second"], [3, "3 seconds"], [5, "5 seconds"], [10, "10 seconds"]], P.timeWarning)}</select>`)}
+ ${row("Distraction-free mode", `<input type="checkbox" id="distractionFree" ${P.distractionFree ? "checked" : ""}>`)}
+ ${row("Restore controls after typing pauses", `<select id="focusIdle">${opt([[1000, "1 second"], [1800, "1.8 seconds"], [2500, "2.5 seconds"], [4000, "4 seconds"]], P.focusIdle)}</select>`)}
  ${row(
    "Caret style",
    `<select id="a9">${opt(
@@ -1173,6 +1211,10 @@ function dSettings() {
   b("#a7", "press", (x) => x.checked);
   b("#a8", "release", (x) => x.checked);
   b("#a9", "caret");
+  $("#errorSound").onchange = (e) => { P.errorSound = e.target.value; save(); };
+  $("#timeWarning").onchange = (e) => { P.timeWarning = +e.target.value; save(); };
+  $("#distractionFree").onchange = (e) => { P.distractionFree = e.target.checked; if (!P.distractionFree) setFocusMode(false); save(); };
+  $("#focusIdle").onchange = (e) => { P.focusIdle = +e.target.value; save(); };
   for (const key of ["saveResults", "celebrateRecords", "celebrationSound", "celebrationAutoDismiss"]) {
     const input = $("#" + key);
     input.onchange = () => { P[key] = input.checked; save(); };
@@ -1237,7 +1279,10 @@ hid.addEventListener("keydown", (e) => {
     e.preventDefault();
     if (e.repeat) return;
     const event = T.text[T.typed.length] === e.key ? e.key === " " ? "word" : "correct" : "incorrect";
-    if (P.press && !window.KEYSTROKE_PERSONALIZATION?.handlesTypingAudio?.(event)) Snd.play(true);
+    if (P.press && !window.KEYSTROKE_PERSONALIZATION?.handlesTypingAudio?.(event)) {
+      const sound = event === "incorrect" && P.errorSound !== "off" ? P.errorSound : P.preset;
+      Snd.play(true, sound);
+    }
     press(e.key);
   } else if (isMod(e.key) && P.modkeys && !e.repeat && P.press) Snd.play(true);
 });
@@ -1259,6 +1304,11 @@ document.addEventListener("keydown", (e) => {
   }
   if (e.key === "Escape" && $("#modal").classList.contains("open"))
     closeModal();
+  if (e.key === "Escape" && $("#nav").classList.contains("open")) {
+    $("#nav").classList.remove("open");
+    $("#navToggle").setAttribute("aria-expanded", "false");
+    $("#navToggle").focus();
+  }
   if (e.altKey && e.key.toLowerCase() === "m") {
     e.preventDefault();
     togMute();
@@ -1268,6 +1318,7 @@ document.addEventListener("visibilitychange", () => {
   if (document.hidden && T.st === "running") {
     T.st = "aborted";
     clearInterval(T.iv);
+    setFocusMode(false);
   }
 });
 window.addEventListener("keystroke-personalization-changed", () => {
@@ -1281,6 +1332,19 @@ function togMute() {
   save();
   drawNav();
 }
+$("#navToggle").onclick = () => {
+  const nav = $("#nav"), open = nav.classList.toggle("open");
+  $("#navToggle").setAttribute("aria-expanded", String(open));
+};
+document.addEventListener("pointermove", () => {
+  if (document.body.classList.contains("focus-mode")) setFocusMode(false);
+});
+document.addEventListener("pointerdown", (event) => {
+  if (document.body.classList.contains("focus-mode") && !event.target.closest("#hid")) setFocusMode(false);
+});
+document.addEventListener("touchstart", () => {
+  if (document.body.classList.contains("focus-mode")) setFocusMode(false);
+}, { passive: true });
 $("#bMute").onclick = togMute;
 $("#bTheme").onclick = () => {
   P.theme = P.theme === "dark" ? "light" : "dark";
