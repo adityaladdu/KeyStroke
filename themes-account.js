@@ -148,6 +148,7 @@
       "#FFFFFF",
     ]),
   ];
+  const EXTRA_THEME_NAMES = "dino\nmagic girl\nmilkshake\nmodern ink\nms cupcakes\nsewing tin light\nvesper light\nlilac mist\nrose pine dawn\nsoaring skies\nrainbow trail\nnord light\nsolarized light\ntangerine\ncamping\nslambook\npaper\ndesert oasis\niceberg light\ncheesecake\n9009\nlil dragon\nblueberry light\nwitch girl\nterrazzo\ndarling\nserika\ngruvbox light\nrepose light\ngodspeed\ndollar\ndmg\nmodern dolch light\nolive\ntaro\nshoko\nbeach\nbreeze\nfroyo\nmr sleeves\nfruit chew\npeaches\nhanok\nretro\npastel\nvaporwave\nfrozen llama\nmizu\npink lemonade\ntiramisu\nmacroblank\nsnes\nstrawberry\ncreamsicle\nlavender\nbingsu\ncafe\nfleuriste\nmiami\niv clover\nmexican\nbotanical\nlime\nhoney\nleather\ndiner\nalpine\ndualshot\nfundamentals\nour theme\nez mode\nevil eye\nmenthol\ncomfy\ntrackday\nmuted\nred samurai\nsweden\npassion fruit\nsuisei\nstriker\ncy red\ngrand prix\ndeku\nhedge\npale nimbus\nretrocast\nsewing tin\nbento\n8008\nmatcha moccha\nfledgling\nonedark\ncopper\ngraen\ncherry blossom\ndiscord\nserika dark\nrepose dark\nrose pine moon\nblueberry dark\noblivion\nwatermelon\ncarbon\nfuture funk\nmint\nsonokai\nlaser\nviridescent\ndracula\nmaterial\nmodern dolch\nsuperuser\nrudy\nbushido\nmashu\nnord\nbouquet\nnebula\npeach blossom\n80s after dark\ngithub\nluna\nblue dolphin\ngruvbox dark\npurpleish\nbliss\ncatppuccin\nwavez\nearthsong\nmonokai\nnautilus\nnorse\nmetaverse\nrose pine\ndev\nhorizon\nnight runner\nsunset\nmoonlight\nishtar\ndark note\ndrowning\ngrape\nvscode\nmetropolis\nalduin\nolivia\niceberg dark\nsolarized dark\ndark magic girl\ncyberspace\nterminal\nchaos theory\njoker\ndots\neverblush\nmiami nights\naether\npulse\nanti hero\nryujinscales\nfloret\nterror below\ntron orange\naurora\nspiderman\nred dragon\ndark\nrgb\nvesper\nvoc\nmidnight\nmountain\narch\nincognito\nterra\ntrance\nsolarized osaka\niv spade\nhammerhead\nphantom\nfire\nstealth\nhusqy\nmatrix\nshadow".split(String.fromCharCode(10));
   const TOK = [
     ["bg", "Background"],
     ["bg2", "Secondary background"],
@@ -180,7 +181,7 @@
     : [];
   const saveC = () => ls.set(TKEY, C);
   if (!Array.isArray(P.fav)) P.fav = [];
-  P.tid = P.tid || "obsidian";
+  P.tid = P.tid || "named-metaverse";
   P.rnd = P.rnd || "off";
   P.name = P.name || "Local user";
   const all = () => [...BI, ...C];
@@ -281,6 +282,30 @@
     }
     return o;
   }
+  const lightThemeNames = new Set(EXTRA_THEME_NAMES.slice(0, 60));
+  const themePalette = (name, index) => {
+    let seed = index + 1;
+    for (const ch of name) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+    const hue = seed % 360;
+    const light = lightThemeNames.has(name) || name.includes(" light") || name.includes(" dawn");
+    const color = (h, s, l) => r2h(...hsl2r((h + 360) % 360, s, l));
+    const bg = color(hue, light ? 0.16 : 0.24, light ? 0.965 : 0.105);
+    const accent = fix(color(hue + 35 + (seed % 80), 0.72, light ? 0.42 : 0.66), bg);
+    return mk("named-" + name.replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), name, !light, [
+      bg,
+      color(hue, light ? 0.12 : 0.22, light ? 0.985 : 0.08),
+      color(hue, light ? 0.13 : 0.2, light ? 0.995 : 0.155),
+      color(hue, light ? 0.22 : 0.16, light ? 0.12 : 0.93),
+      color(hue, light ? 0.18 : 0.18, light ? 0.34 : 0.72),
+      color(hue, light ? 0.08 : 0.1, 0.53),
+      color(hue, light ? 0.18 : 0.2, light ? 0.82 : 0.26),
+      accent,
+      light ? "#C62828" : "#FF647C",
+      accent,
+    ]);
+  };
+  const existingThemeNames = new Set(BI.map((theme) => theme.name.toLowerCase()));
+  BI.push(...EXTRA_THEME_NAMES.filter((name) => !existingThemeNames.has(name)).map(themePalette));
   /* theme page */
   function newD(t, keepId) {
     D = {
@@ -765,8 +790,6 @@
         streak++;
       else break;
     }
-    const lvl = Math.floor(tm / 600) + 1,
-      pr = (tm % 600) / 600;
     const dm = { "30d": 30, "3m": 91, "6m": 182, "12m": 365, all: 0 };
     let days = dm[HP];
     if (!days) {
@@ -828,7 +851,7 @@
       .slice()
       .reverse();
     $("#main").innerHTML =
-      `<h2 style="margin-top:0">Account</h2>${authCard}<div class="row" style="gap:16px"><div style="width:56px;height:56px;border-radius:50%;background:var(--ac);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700" aria-hidden="true">${(P.name.trim()[0] || "?").toUpperCase()}</div><div><input type="text" id="nm" value="${P.name.replace(/"/g, "&quot;")}" aria-label="Display name" maxlength="24"><div class="hint" style="margin:4px 0 0">Local profile on this device only. Level ${lvl}: 1 per 10 typing minutes.</div><div style="height:4px;background:var(--bd);border-radius:2px;margin-top:4px"><div style="height:4px;width:${pr * 100}%;background:var(--ac);border-radius:2px"></div></div></div></div>
+      `<h2 style="margin-top:0">Account</h2>${authCard}${window.KEYSTROKE_PERSONALIZATION?.profileMarkup?.() || ""}
 <div class="stats">${stat("Tests completed", n)}${stat("Typing time", fmt(tm))}${stat("Words (est.)", Math.round(words))}${stat("Streak (days)", streak)}${stat("Highest WPM", n ? Math.round(Math.max(...H.map((h) => h.wpm))) : "—")}${stat("Avg WPM", n ? Math.round(av(sum((h) => h.wpm))) : "—")}${stat("Highest acc", n ? Math.round(Math.max(...H.map((h) => h.acc))) + "%" : "—")}${stat("Avg acc", n ? Math.round(av(sum((h) => h.acc))) + "%" : "—")}</div>
 <div class="row"><h3 style="margin:0;flex:1">Activity · ${tot} test${tot === 1 ? "" : "s"} in period</h3><select id="hp" aria-label="Period">${opt(
         [
@@ -845,10 +868,7 @@ ${n ? "" : '<div class="empty" style="margin:8px 0">No tests yet. The grid fills
 <div class="hint" id="hs" aria-live="polite">Hover, focus or click a day for details.</div><div class="row hint">Less ${[0, 1, 2, 3, 4].map((L) => `<span class="hc" style="display:inline-block;background:${L ? `color-mix(in srgb,var(--ac) ${mixp[L]}%,var(--el))` : "var(--bd)"}"></span>`).join("")} More (1, 2–3, 4–6, 7+ tests/day)</div>
 <h3>${selDay ? "Tests on " + selDay + ' <button id="cf">Clear filter</button>' : "Last 10 tests"}</h3>${rows.length ? `<table><tr><th>When</th><th>Type</th><th>WPM</th><th>Acc</th></tr>${rows.map((h) => `<tr><td>${new Date(h.t).toLocaleString()}</td><td>${h.mode}</td><td>${Math.round(h.wpm)}</td><td>${Math.round(h.acc)}%</td></tr>`).join("")}</table>` : '<div class="empty">No tests.</div>'}
 <div class="row" style="margin-top:24px"><button id="xp">Copy data as JSON</button><button id="cl">Clear history</button></div><p class="hint" id="xm"></p>`;
-    $("#nm").oninput = (e) => {
-      P.name = e.target.value || "Local user";
-      save();
-    };
+    window.KEYSTROKE_PERSONALIZATION?.bindProfileEditor?.();
     if ($("#googleSignIn"))
       $("#googleSignIn").onclick = () => window.KEYSTROKE_AUTH?.signIn();
     if ($("#googleSignOut"))
@@ -895,6 +915,9 @@ ${n ? "" : '<div class="empty" style="margin:8px 0">No tests yet. The grid fills
       });
   }
   window.addEventListener("keystroke-auth-state", () => {
+    if (view === "account") dAccount();
+  });
+  window.addEventListener("keystroke-personalization-changed", () => {
     if (view === "account") dAccount();
   });
   /* wiring */

@@ -27,8 +27,8 @@ const DEF = {
   dur: 30,
   words: 25,
   diff: "normal",
-  preset: "red",
-  vol: 0.7,
+  preset: "razer-green",
+  vol: 0.5,
   intensity: "balanced",
   press: true,
   release: true,
@@ -187,6 +187,37 @@ const PRE = [
     bg: 1.3,
   },
 ];
+PRE.push(
+  ...[
+    ["off", "Off", "Effects", "Disable typing sounds.", { effect: "off" }],
+    ["click", "Click", "Effects", "A short filtered key click.", { effect: "click" }],
+    ["beep", "Beep", "Effects", "A short sine beep.", { effect: "beep" }],
+    ["pop", "Pop", "Effects", "A soft descending pop.", { effect: "pop" }],
+    ["typewriter", "Typewriter", "Effects", "A crisp, compact typewriter tap.", { effect: "typewriter" }],
+    ["osu", "Osu", "Effects", "An original rhythm-game style tone.", { effect: "osu" }],
+    ["hitmarker", "Hitmarker", "Effects", "A short two-tone confirmation.", { effect: "hitmarker" }],
+    ["fist-fight", "Fist Fight", "Effects", "A soft, synthesized impact.", { effect: "punch" }],
+    ["rubber-keys", "Rubber Keys", "Effects", "A muted, bouncy key tap.", { effect: "rubber" }],
+    ["fart", "Fart", "Effects", "A brief low synthesized burst.", { effect: "fart" }],
+    ["sine", "Sine", "Waveforms", "A smooth sine-wave tone.", { wave: "sine", b: 440, nz: 900, dc: 0.035 }],
+    ["sawtooth", "Sawtooth", "Waveforms", "A bright sawtooth-wave tone.", { wave: "sawtooth", b: 330, nz: 1100, dc: 0.04 }],
+    ["square", "Square", "Waveforms", "A hollow square-wave tone.", { wave: "square", b: 392, nz: 950, dc: 0.04 }],
+    ["triangle", "Triangle", "Waveforms", "A mellow triangle-wave tone.", { wave: "triangle", b: 494, nz: 1000, dc: 0.04 }],
+    ["pentatonic", "Pentatonic", "Waveforms", "A rotating pentatonic note.", { wave: "sine", b: 392, nz: 850, dc: 0.06, scale: [0, 3, 5, 7, 10, 12] }],
+    ["wholetone", "Wholetone", "Waveforms", "A rotating whole-tone note.", { wave: "sine", b: 392, nz: 850, dc: 0.06, scale: [0, 2, 4, 6, 8, 10, 12] }],
+    ["nk-creams", "NK Creams", "Switches", "A warm, rounded linear switch approximation.", { b: 150, nz: 1150, dc: 0.07, g: 0.9, lp: 1800, bg: 0.9 }],
+    ["akko-lavenders", "Akko Lavenders", "Switches", "A bright, lightly tactile switch approximation.", { b: 205, nz: 2300, dc: 0.055, bump: 0.8 }],
+    ["cherry-mx-black-abs", "Cherry MX Black ABS", "Switches", "A firm, deep ABS keycap approximation.", { b: 125, nz: 1200, dc: 0.07, g: 1.05, lp: 1900 }],
+    ["cherry-mx-black-pbt", "Cherry MX Black PBT", "Switches", "A firm, slightly muted PBT keycap approximation.", { b: 115, nz: 900, dc: 0.075, g: 0.95, lp: 1450 }],
+    ["cherry-mx-blue-abs", "Cherry MX Blue ABS", "Switches", "A crisp clicky ABS keycap approximation.", { b: 240, nz: 3500, dc: 0.05, click: 1.2 }],
+    ["cherry-mx-blue-pbt", "Cherry MX Blue PBT", "Switches", "A crisp, slightly lower PBT keycap approximation.", { b: 220, nz: 2800, dc: 0.055, click: 1.05 }],
+    ["cherry-mx-brown-pbt", "Cherry MX Brown PBT", "Switches", "A restrained tactile PBT switch approximation.", { b: 155, nz: 1650, dc: 0.06, bump: 0.85, lp: 2100 }],
+    ["kailh-box-white", "Kailh Box White", "Switches", "A crisp, light clicky switch approximation.", { b: 245, nz: 3900, dc: 0.045, click: 1.25 }],
+    ["razer-green", "Razer Green", "Switches", "A bright, clicky switch approximation.", { b: 235, nz: 3600, dc: 0.05, click: 1.15 }],
+    ["tealios-v2", "Tealios V2", "Switches", "A smooth, clean linear switch approximation.", { b: 195, nz: 1850, dc: 0.045, g: 0.9 }],
+    ["trust-gxt", "Trust GXT", "Switches", "A fuller, mid-pitched gaming keyboard approximation.", { b: 175, nz: 2100, dc: 0.06, click: 0.45, bump: 0.5 }],
+  ].map(([id, n, c, d, sound]) => ({ id, n, c, d, b: 170, nz: 1800, dc: 0.05, ...sound })),
+);
 const INT = {
   quiet: { g: 0.5, bf: 1, nf: 0.8 },
   balanced: { g: 1, bf: 1, nf: 1 },
@@ -199,6 +230,7 @@ const Snd = {
   out: null,
   nb: null,
   voices: 0,
+  note: 0,
   ok: true,
   init() {
     if (this.ctx || !this.ok) return;
@@ -220,16 +252,21 @@ const Snd = {
   },
   play(down, id) {
     id = id || P.preset;
+    const p = pre(id);
+    if (p.effect === "off") return;
     if (P.mute || !this.ok) return;
     this.init();
     const x = this.ctx;
     if (!x) return;
     if (x.state === "suspended") x.resume();
     if (this.voices > 10) return;
-    const p = pre(id),
-      i = INT[P.intensity] || INT.balanced,
+    const i = INT[P.intensity] || INT.balanced,
       r = () => Math.random() * 2 - 1,
       t = x.currentTime;
+    if (p.effect) {
+      this.playEffect(p, down);
+      return;
+    }
     const vs = p.c === "Soft" ? (P.sv ?? 0.5) * 2 : 1;
     const g =
       P.vol *
@@ -269,9 +306,10 @@ const Snd = {
     ns.stop(t + dc + 0.02);
     ns.onended = mk();
     const o = x.createOscillator();
-    o.type = "sine";
+    o.type = p.wave || "sine";
+    const semitone = p.scale ? p.scale[this.note++ % p.scale.length] : 0;
     o.frequency.setValueAtTime(
-      p.b * i.bf * (1 + r() * 0.04 * vs) * (down ? 1 : 1.2),
+      p.b * Math.pow(2, semitone / 12) * i.bf * (1 + r() * 0.04 * vs) * (down ? 1 : 1.2),
       t,
     );
     o.frequency.exponentialRampToValueAtTime(p.b * 0.6, t + dc * 1.5);
@@ -313,6 +351,40 @@ const Snd = {
       cg.connect(this.out);
       n3.start(t + dl);
       n3.stop(t + dl + 0.02);
+    }
+  },
+  playEffect(p, down) {
+    const x = this.ctx, t = x.currentTime;
+    const volume = P.vol * (P.pv[p.id] ?? 1) * (down ? 1 : 0.45);
+    const tone = (hz, shape, duration, endHz = hz, level = 0.5, delay = 0) => {
+      const osc = x.createOscillator(), gain = x.createGain(), at = t + delay;
+      osc.type = shape;
+      osc.frequency.setValueAtTime(hz, at);
+      if (endHz !== hz) osc.frequency.exponentialRampToValueAtTime(Math.max(1, endHz), at + duration);
+      gain.gain.setValueAtTime(Math.max(0.0001, volume * level), at);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + duration);
+      osc.connect(gain); gain.connect(this.out); osc.start(at); osc.stop(at + duration + 0.01);
+    };
+    const noise = (hz, duration, level = 0.5, filterType = "bandpass") => {
+      const source = x.createBufferSource(), filter = x.createBiquadFilter(), gain = x.createGain();
+      source.buffer = this.nb; filter.type = filterType; filter.frequency.value = hz;
+      gain.gain.setValueAtTime(Math.max(0.0001, volume * level), t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+      source.connect(filter); filter.connect(gain); gain.connect(this.out); source.start(t); source.stop(t + duration + 0.01);
+    };
+    switch (p.effect) {
+      case "click": noise(2200, 0.018, 0.55, "highpass"); break;
+      case "beep": tone(880, "sine", 0.075, 880, 0.55); break;
+      case "pop": tone(220, "sine", 0.09, 90, 0.75); noise(850, 0.025, 0.18); break;
+      case "typewriter":
+        noise(1900, 0.018, 0.5, "highpass");
+        if (!down) tone(1280, "triangle", 0.06, 950, 0.22, 0.006);
+        break;
+      case "osu": tone(down ? 660 : 990, "triangle", 0.085, down ? 880 : 740, 0.5); break;
+      case "hitmarker": tone(1450, "sine", 0.035, 1450, 0.48); tone(1900, "sine", 0.045, 1900, 0.35, 0.03); break;
+      case "punch": noise(180, 0.09, 0.55, "lowpass"); tone(105, "triangle", 0.11, 48, 0.65); break;
+      case "rubber": noise(560, 0.03, 0.25, "lowpass"); tone(170, "sine", 0.07, 105, 0.55); break;
+      case "fart": tone(105, "sawtooth", 0.17, 52, 0.62); break;
     }
   },
 };
@@ -420,6 +492,7 @@ function newTest() {
     samples: [],
     t0: 0,
   });
+  window.dispatchEvent(new Event("keystroke-test-reset"));
   if (view === "test") renderText();
 }
 function renderText() {
@@ -507,6 +580,8 @@ function press(ch) {
   const s = T.spans[i];
   s.className = ok ? "c" : "w";
   mark(i + 1);
+  window.dispatchEvent(new CustomEvent("keystroke-test-progress", { detail: { progress: T.text.length ? correctN() / T.text.length : 0 } }));
+  if (P.press) window.KEYSTROKE_PERSONALIZATION?.playTypingEvent(ok && ch === " " ? "word" : ok ? "correct" : "incorrect", P.vol, P.mute);
   if (T.typed.length >= T.text.length) finish();
 }
 function back() {
@@ -514,6 +589,7 @@ function back() {
   T.typed.pop();
   T.spans[T.typed.length].className = "";
   mark(T.typed.length);
+  if (P.press) window.KEYSTROKE_PERSONALIZATION?.playTypingEvent("backspace", P.vol, P.mute);
 }
 function tick() {
   const e = elapsed();
@@ -560,6 +636,7 @@ function finish() {
   let e = elapsed();
   if (P.mode === "time") e = Math.min(e, P.dur);
   T.st = "completed";
+  window.dispatchEvent(new CustomEvent("keystroke-test-complete", { detail: { progress: 1 } }));
   T.dur = e;
   const m = metrics(e);
   if (P.mode === "time" || T.samples.length < 2) T.samples.push(m.wpm);
@@ -584,6 +661,7 @@ function finish() {
   }
   liveStats();
   const improvement = prev == null ? 0 : r.wpm - prev;
+  if (P.press) window.KEYSTROKE_PERSONALIZATION?.playTypingEvent(P.saveResults && prev != null && r.wpm > prev ? "personalBest" : "testComplete", P.vol, P.mute, true);
   if (qualifiesForCelebration(r.wpm, prev, P.saveResults && P.celebrateRecords, P.celebrationMinImprovement)) {
     showCelebration(r, prev, improvement);
   } else {
@@ -754,6 +832,9 @@ const opt = (arr, cur) =>
     .join("");
 const presetSel = (id) =>
   `<select id="${id}" aria-label="Sound profile">${[
+    "Effects",
+    "Waveforms",
+    "Switches",
     "Soft",
     "Linear",
     "Tactile",
@@ -770,7 +851,7 @@ const presetSel = (id) =>
 function draw() {
   drawNav();
   document.documentElement.dataset.theme = P.theme;
-  ({ test: dTest, studio: dStudio, stats: dStats, settings: dSettings })[
+  ({ test: dTest, studio: dStudio, stats: dStats, settings: dSettings, game: () => window.KEYSTROKE_GAME?.renderSection?.() })[
     view
   ]();
   if (view === "test") {
@@ -807,6 +888,7 @@ function dTest() {
     )}</select><button id="rs" aria-label="Restart (Tab)">↻ Restart</button></div>
  <div class="stats" aria-label="Live statistics"><div class="stat"><small>WPM</small><b id="s_wpm">0</b></div><div class="stat"><small>Accuracy</small><b id="s_acc">100%</b></div><div class="stat"><small>Raw</small><b id="s_raw">0</b></div><div class="stat"><small>${P.mode === "time" ? "Time left" : "Words"}</small><b id="s_t">0</b></div><div class="stat"><small>Best</small><b>${H.length ? Math.round(Math.max(...H.map((h) => h.wpm))) : "—"}</b></div></div>
  <div id="box" class="blur"><div id="txt" aria-label="Text to type"></div><div id="msg">Click here to focus</div></div>
+ <div id="miniGameTrack" hidden></div>
  <div class="hint" id="hint">Start typing to begin.</div>
  <div class="sp"></div><div class="row">${presetSel("pSel")}<button id="pPrev">Preview</button><label class="row" style="color:var(--tx2)">Volume <input type="range" id="vol" min="0" max="1" step=".05" value="${P.vol}" aria-label="Volume"></label></div>
  <p class="hint"><kbd>Tab</kbd> restart · <kbd>Esc</kbd> close dialog · <kbd>Alt</kbd>+<kbd>M</kbd> mute · Sounds are synthesized (no recordings bundled).</p>`;
@@ -855,6 +937,7 @@ function dTest() {
     save();
   };
   $("#box").onclick = focusInput;
+  window.KEYSTROKE_GAME?.renderTest?.();
 }
 function swIcon() {
   return `<svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="5" y="5" width="30" height="26" rx="6"/><rect x="10" y="9" width="20" height="14" rx="3" opacity=".5"/><path d="M12 35h16" opacity=".4"/></svg>`;
@@ -884,7 +967,7 @@ function dStudio() {
       .join("")}</div>`;
   $("#main").innerHTML =
     `<h2 style="margin-top:0">Sound Studio</h2><p style="color:var(--tx2)">Compare switch profiles without starting a test. Audio only plays when you press a button. Profiles are descriptive, not official or exact reproductions; sounds are generated with Web Audio.</p>
- ${grp("Soft")}${grp("Linear")}${grp("Tactile")}${grp("Clicky")}
+ ${grp("Effects")}${grp("Waveforms")}${grp("Switches")}${grp("Soft")}${grp("Linear")}${grp("Tactile")}${grp("Clicky")}
  <h2>A/B comparison</h2><div class="row"><select id="abA" aria-label="Profile A">${opt(
    PRE.map((p) => [p.id, p.n]),
    AB[0],
@@ -893,14 +976,15 @@ function dStudio() {
    AB[1],
  )}</select><button id="abP" class="pri">Play A → B</button><button id="abUse">Use B in test</button></div>
  <h2>Controls</h2>
- <div class="set"><span>Global volume</span><input type="range" id="gv" min="0" max="1" step=".05" value="${P.vol}"></div>
+ <div class="set"><span>Global volume</span><output id="gvValue">${P.vol.toFixed(1)}</output><input type="range" id="gv" min="0" max="1" step=".05" value="${P.vol}" aria-label="Sound volume"></div>
  <div class="set"><span>Volume for “${pre(P.preset).n}”</span><input type="range" id="pvv" min="0" max="1.5" step=".05" value="${P.pv[P.preset] ?? 1}"></div>
  <div class="set"><span>Intensity</span><select id="int">${opt(
    Object.keys(INT).map((k) => [k, k[0].toUpperCase() + k.slice(1)]),
    P.intensity,
  )}</select></div>
  <div class="set"><span>Soft sound variance (how much each keystroke varies; soft profiles only)</span><input type="range" id="sv" min="0" max="1" step=".05" value="${P.sv ?? 0.5}" aria-label="Soft sound variance"></div><div class="set"><span>Press sound</span><input type="checkbox" id="tp" ${P.press ? "checked" : ""}></div><div class="set"><span>Release sound</span><input type="checkbox" id="tr" ${P.release ? "checked" : ""}></div>
- <div class="row" style="margin-top:16px"><button id="toTest" class="pri">Back to test</button><button id="rst">Reset sound defaults</button></div>`;
+ <div class="row" style="margin-top:16px"><button id="toTest" class="pri">Back to test</button><button id="rst">Reset sound defaults</button></div>${window.KEYSTROKE_PERSONALIZATION?.soundStudioMarkup?.() || ""}`;
+  window.KEYSTROKE_PERSONALIZATION?.bindSoundStudio?.();
   const pv = (id) => {
     Snd.play(true, id);
     setTimeout(() => Snd.play(false, id), 90);
@@ -933,6 +1017,7 @@ function dStudio() {
   };
   $("#gv").oninput = (e) => {
     P.vol = +e.target.value;
+    $("#gvValue").textContent = P.vol.toFixed(1);
     save();
   };
   $("#pvv").oninput = (e) => {
@@ -1145,13 +1230,14 @@ hid.addEventListener("keydown", (e) => {
   if (e.key === "Backspace") {
     e.preventDefault();
     back();
-    if (P.press && !e.repeat) Snd.play(true);
+    if (P.press && !e.repeat && !window.KEYSTROKE_PERSONALIZATION?.handlesTypingAudio?.("backspace")) Snd.play(true);
     return;
   }
   if (e.key.length === 1) {
     e.preventDefault();
     if (e.repeat) return;
-    if (P.press) Snd.play(true);
+    const event = T.text[T.typed.length] === e.key ? e.key === " " ? "word" : "correct" : "incorrect";
+    if (P.press && !window.KEYSTROKE_PERSONALIZATION?.handlesTypingAudio?.(event)) Snd.play(true);
     press(e.key);
   } else if (isMod(e.key) && P.modkeys && !e.repeat && P.press) Snd.play(true);
 });
@@ -1183,6 +1269,9 @@ document.addEventListener("visibilitychange", () => {
     T.st = "aborted";
     clearInterval(T.iv);
   }
+});
+window.addEventListener("keystroke-personalization-changed", () => {
+  if (view === "studio") dStudio();
 });
 $("#modal").addEventListener("click", (e) => {
   if (e.target.id === "modal") closeModal();

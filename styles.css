@@ -388,6 +388,64 @@ th {
 .google-button:disabled { cursor: wait; opacity: .65; }
 .google-button svg { width: 20px; height: 20px; flex: none; }
 .auth-card .hint { margin: 4px 0 0; }
+.personal-card {
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  background: var(--el);
+  padding: 16px;
+  margin: 16px 0;
+}
+.personal-profile-head { display: flex; align-items: center; gap: 14px; }
+.personal-profile-copy { min-width: 0; }
+.personal-profile-copy p { margin: 4px 0 10px; }
+.keystroke-avatar {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--el);
+  font-size: 38px;
+}
+.keystroke-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-editor { margin-top: 16px; }
+.personal-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.personal-tabs button.on, .avatar-choice.selected { border-color: var(--ac); outline: 2px solid color-mix(in srgb,var(--ac) 45%,transparent); }
+.avatar-gallery { display: grid; grid-template-columns: repeat(auto-fit,minmax(88px,1fr)); gap: 8px; }
+.avatar-choice { min-height: 92px; display: grid; justify-items: center; align-content: center; gap: 4px; background: var(--avatar-bg); color: var(--tx); }
+.avatar-choice > span { font-size: 34px; }
+.avatar-choice small { font-size: 11px; }
+.avatar-upload, .sound-upload { display: grid; gap: 10px; margin-top: 14px; }
+.avatar-upload-label { display: inline-flex; width: fit-content; align-items: center; }
+.avatar-upload-label input { max-width: 220px; margin-left: 8px; }
+#avatarCrop { width: min(100%,320px); aspect-ratio: 1; display: block; margin: 12px auto; border-radius: 50%; background: var(--bg); touch-action: none; cursor: grab; }
+#avatarCrop:active { cursor: grabbing; }
+.avatar-zoom { display: flex; align-items: center; gap: 10px; }
+.avatar-zoom input { flex: 1; }
+.sound-assignments, .sound-library { display: grid; gap: 10px; }
+.sound-assignments { grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); }
+.sound-assignment, .sound-card { display: grid; gap: 8px; }
+.sound-card { border: 1px solid var(--bd); border-radius: 8px; padding: 12px; }
+.sound-card-head, .sound-card-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.sound-card-head > div { display: grid; gap: 3px; }
+.sound-card-head small { color: var(--mu); }
+.sound-card-controls label { display: flex; align-items: center; gap: 6px; }
+.sound-card-controls input[type="range"] { width: min(120px,30vw); }
+.avatar-editor[hidden], #customSoundAssignments[hidden], #catSoundOptions[hidden] { display: none !important; }
+.avatar-choice:focus-visible, .personal-tabs button:focus-visible, #avatarCrop:focus-visible { outline: 2px solid var(--ac); outline-offset: 2px; }
+#tg.grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+#tg .card { min-height: 38px; padding: 8px 10px; }
+.mini-game-panel, .mini-game-settings { margin: 20px 0; padding: 18px; border-radius: 10px; background: var(--el); }
+.mini-game-course { position: relative; height: 88px; overflow: hidden; border-radius: 8px; background: var(--bg); }
+.mini-game-finish { position: absolute; z-index: 1; top: 8px; right: 5%; color: var(--mu); font-size: 11px; letter-spacing: .08em; }
+.mini-game-road { position: absolute; right: 0; bottom: 17px; left: 0; border-top: 2px dashed var(--bd); }
+.mini-game-player { position: absolute; z-index: 2; bottom: 20px; display: block; width: 48px; height: 40px; transform: translateX(-50%); transition: left 160ms ease-out; }
+.mini-game-player svg { width: 100%; height: 100%; overflow: visible; }
+.mini-game-progress { margin: 8px 0 0; color: var(--tx2); text-align: center; }
+.mini-game-settings { max-width: 760px; }
+.mini-game-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.mini-game-settings select { min-width: 220px; }
 .sr {
   position: absolute;
   left: -9999px;
@@ -406,6 +464,9 @@ svg text {
   font-size: 10px;
 }
 @media (max-width: 600px) {
+  .personal-card { padding: 12px; }
+  .personal-profile-head { align-items: flex-start; }
+  .sound-card-controls { align-items: flex-start; }
   header,
   main {
     padding-left: 16px;
