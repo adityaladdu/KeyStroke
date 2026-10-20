@@ -609,6 +609,7 @@ function back() {
   T.typed.pop();
   T.spans[T.typed.length].className = "";
   mark(T.typed.length);
+  window.dispatchEvent(new CustomEvent("keystroke-test-progress", { detail: { progress: T.text.length ? correctN() / T.text.length : 0 } }));
   if (P.press) window.KEYSTROKE_PERSONALIZATION?.playTypingEvent("backspace", P.vol, P.mute);
 }
 function tick() {

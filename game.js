@@ -36,7 +36,7 @@
   function renderSection() {
     const main = document.querySelector("#main");
     if (!main) return;
-    main.innerHTML = `<h2 style="margin-top:0">Mini Game</h2><p class="hint">Choose a player and turn on the optional track. It moves with correct typing progress and shares the active KEYSTROKE theme. Game settings are saved on this device.</p><section class="personal-card mini-game-settings"><label class="mini-game-toggle"><input id="miniGameEnabled" type="checkbox" ${settings.enabled ? "checked" : ""}> Show the mini-game beneath the typing text</label><label class="set" for="miniGamePlayer"><span>Player</span><select id="miniGamePlayer">${[["car", "Car"], ["bike", "Bike"], ["runner", "Running character"], ["animal", "Running animal"]].map(([id, label]) => `<option value="${id}" ${settings.player === id ? "selected" : ""}>${label}</option>`).join("")}</select></label><h3>Track preview</h3><div id="miniGamePreview">${courseMarkup("mini-game-preview")}</div><p class="hint">The game uses your real test progress. It does not change the timer, WPM, or accuracy.</p><button id="miniGameBack" class="pri" type="button">Return to typing</button></section>`;
+    main.innerHTML = `<h2 style="margin-top:0">Mini Game</h2><p class="hint">Choose a player and turn on the optional track. Play opens the existing typing test; the track advances with correctly typed text and shares the active KEYSTROKE theme. Game settings are saved on this device.</p><section class="personal-card mini-game-settings"><label class="mini-game-toggle"><input id="miniGameEnabled" type="checkbox" ${settings.enabled ? "checked" : ""}> Show the mini-game beneath the typing text</label><label class="set" for="miniGamePlayer"><span>Player</span><select id="miniGamePlayer">${[["car", "Car"], ["bike", "Bike"], ["runner", "Running character"], ["animal", "Running animal"]].map(([id, label]) => `<option value="${id}" ${settings.player === id ? "selected" : ""}>${label}</option>`).join("")}</select></label><h3>Track preview</h3><div id="miniGamePreview">${courseMarkup("mini-game-preview")}</div><p class="hint">The game uses your real test progress. It does not change the timer, WPM, or accuracy.</p><div class="row"><button id="miniGamePlay" class="pri" type="button">Play Mini Game</button><button id="miniGameBack" type="button">Return to typing</button></div></section>`;
     main.querySelector("#miniGameEnabled").onchange = (event) => {
       settings.enabled = event.target.checked;
       saveSettings();
@@ -47,7 +47,13 @@
       saveSettings();
       renderSection();
     };
-    main.querySelector("#miniGameBack").onclick = () => go("test");
+    const openTypingGame = () => {
+      settings.enabled = true;
+      saveSettings();
+      go("test");
+    };
+    main.querySelector("#miniGamePlay").onclick = openTypingGame;
+    main.querySelector("#miniGameBack").onclick = openTypingGame;
   }
   function updateProgress(next, isComplete = false) {
     progress = Math.max(0, Math.min(1, Number(next) || 0));

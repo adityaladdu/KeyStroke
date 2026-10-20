@@ -453,8 +453,8 @@ th {
 .mini-game-settings select { min-width: 220px; }
 .focus-mode header { max-height: 0; padding-block: 0; border: 0; overflow: hidden; opacity: 0; transition: max-height .18s ease, opacity .18s ease, padding .18s ease; }
 .focus-mode #main > .row[role="group"], .focus-mode #main > .sp,
-.focus-mode #main > .row:not([role="group"]), .focus-mode #main > .hint:not(#hint),
-.focus-mode #main > #miniGameTrack { display: none !important; }
+.focus-mode #main > .row:not([role="group"]), .focus-mode #main > .hint:not(#hint)
+{ display: none !important; }
 body:not(.focus-mode) header { transition: max-height .18s ease, opacity .18s ease, padding .18s ease; }
 .table-scroll { max-width: 100%; overflow-x: auto; }
 @media (max-width: 700px) {
