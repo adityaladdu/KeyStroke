@@ -1,0 +1,8 @@
+{
+  "personalBestApplause": {
+    "src": "assets/audio/personal-best-applause.mp3",
+    "available": false,
+    "license": null,
+    "notes": "Optional placeholder. Add a short, properly licensed applause recording at this path and set available to true."
+  }
+}
