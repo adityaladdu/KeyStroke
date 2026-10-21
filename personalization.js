@@ -280,6 +280,8 @@
         updateAvatarPreview();
         drawGallery();
         fileInput.value = "";
+        editor.hidden = true;
+        toggle.setAttribute("aria-expanded", "false");
         setProfileMessage("Avatar saved on this device for this profile.");
       } catch {
         save.disabled = false;

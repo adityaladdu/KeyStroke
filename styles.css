@@ -448,7 +448,7 @@ th {
 .mini-game-course { position: relative; height: 88px; overflow: hidden; border-radius: 8px; background: var(--bg); }
 .mini-game-finish { position: absolute; z-index: 1; top: 8px; right: 5%; color: var(--mu); font-size: 11px; letter-spacing: .08em; }
 .mini-game-road { position: absolute; right: 0; bottom: 17px; left: 0; border-top: 2px dashed var(--bd); }
-.mini-game-player { position: absolute; z-index: 2; bottom: 20px; display: block; width: 48px; height: 40px; transform: translateX(-50%); transition: left 160ms ease-out; }
+.mini-game-player { position: absolute; z-index: 2; bottom: 20px; display: block; width: 56px; height: 44px; transform: translateX(-50%); transition: left 120ms linear; }
 .mini-game-player svg { width: 100%; height: 100%; overflow: visible; }
 .mini-game-progress { margin: 8px 0 0; color: var(--tx2); text-align: center; }
 .mini-game-settings { max-width: 760px; }

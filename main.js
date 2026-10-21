@@ -487,6 +487,11 @@ function correctN() {
   for (let i = 0; i < T.typed.length; i++) if (T.typed[i] === T.text[i]) c++;
   return c;
 }
+function miniGameProgressDetail() {
+  return {
+    progress: T.text.length ? correctN() / T.text.length : 0,
+  };
+}
 function metrics(sec) {
   const m = Math.max(sec, 1 / 60) / 60,
     c = correctN();
@@ -600,7 +605,7 @@ function press(ch) {
   const s = T.spans[i];
   s.className = ok ? "c" : "w";
   mark(i + 1);
-  window.dispatchEvent(new CustomEvent("keystroke-test-progress", { detail: { progress: T.text.length ? correctN() / T.text.length : 0 } }));
+  window.dispatchEvent(new CustomEvent("keystroke-test-progress", { detail: miniGameProgressDetail() }));
   if (P.press) window.KEYSTROKE_PERSONALIZATION?.playTypingEvent(ok && ch === " " ? "word" : ok ? "correct" : "incorrect", P.vol, P.mute);
   if (T.typed.length >= T.text.length) finish();
 }
@@ -609,7 +614,7 @@ function back() {
   T.typed.pop();
   T.spans[T.typed.length].className = "";
   mark(T.typed.length);
-  window.dispatchEvent(new CustomEvent("keystroke-test-progress", { detail: { progress: T.text.length ? correctN() / T.text.length : 0 } }));
+  window.dispatchEvent(new CustomEvent("keystroke-test-progress", { detail: miniGameProgressDetail() }));
   if (P.press) window.KEYSTROKE_PERSONALIZATION?.playTypingEvent("backspace", P.vol, P.mute);
 }
 function tick() {
@@ -663,7 +668,7 @@ function finish() {
   let e = elapsed();
   if (P.mode === "time") e = Math.min(e, P.dur);
   T.st = "completed";
-  window.dispatchEvent(new CustomEvent("keystroke-test-complete", { detail: { progress: 1 } }));
+  window.dispatchEvent(new CustomEvent("keystroke-test-complete", { detail: miniGameProgressDetail() }));
   T.dur = e;
   const m = metrics(e);
   if (P.mode === "time" || T.samples.length < 2) T.samples.push(m.wpm);

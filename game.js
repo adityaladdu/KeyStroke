@@ -25,7 +25,12 @@
     return players[type] || players.car;
   }
   function courseMarkup(extraClass = "") {
-    return `<div class="mini-game-course ${extraClass}" style="--game-progress:${progress}"><span class="mini-game-finish" aria-hidden="true">FINISH</span><span class="mini-game-player" style="left:${4 + progress * 88}%">${playerMarkup()}</span><div class="mini-game-road" aria-hidden="true"></div></div><p class="mini-game-progress">${completed ? "Finished! Nice run." : `${Math.round(progress * 100)}% through this test`}</p>`;
+    const preview = extraClass === "mini-game-preview";
+    const displayedProgress = preview ? 0 : progress;
+    const label = completed
+      ? displayedProgress >= 1 ? "Finished! Nice run." : `Test complete · ${(displayedProgress * 100).toFixed(1)}% progress`
+      : `${(displayedProgress * 100).toFixed(displayedProgress > 0 && displayedProgress < 0.1 ? 1 : 0)}% through this test`;
+    return `<div class="mini-game-course ${extraClass}" style="--game-progress:${displayedProgress}"><span class="mini-game-finish" aria-hidden="true">FINISH</span><span class="mini-game-player" style="left:${4 + displayedProgress * 88}%">${playerMarkup()}</span><div class="mini-game-road" aria-hidden="true"></div></div><p class="mini-game-progress">${label}</p>`;
   }
   function renderTest() {
     const container = document.querySelector("#miniGameTrack");
@@ -55,19 +60,22 @@
     main.querySelector("#miniGamePlay").onclick = openTypingGame;
     main.querySelector("#miniGameBack").onclick = openTypingGame;
   }
-  function updateProgress(next, isComplete = false) {
-    progress = Math.max(0, Math.min(1, Number(next) || 0));
+  function updateProgress(detail = {}, isComplete = false) {
+    const raw = typeof detail === "number" ? detail : detail?.progress;
+    progress = Math.max(0, Math.min(1, Number(raw) || 0));
     completed = isComplete;
     const container = document.querySelector("#miniGameTrack");
     if (container && !container.hidden) {
       const player = container.querySelector(".mini-game-player");
       const label = container.querySelector(".mini-game-progress");
       if (player) player.style.left = `${4 + progress * 88}%`;
-      if (label) label.textContent = completed ? "Finished! Nice run." : `${Math.round(progress * 100)}% through this test`;
+      if (label) label.textContent = completed
+        ? progress >= 1 ? "Finished! Nice run." : `Test complete · ${(progress * 100).toFixed(1)}% progress`
+        : `${(progress * 100).toFixed(progress > 0 && progress < 0.1 ? 1 : 0)}% through this test`;
     }
   }
 
-  window.addEventListener("keystroke-test-progress", (event) => updateProgress(event.detail?.progress));
+  window.addEventListener("keystroke-test-progress", (event) => updateProgress(event.detail));
   window.addEventListener("keystroke-test-reset", () => updateProgress(0));
   window.addEventListener("keystroke-test-complete", (event) => updateProgress(event.detail?.progress ?? 1, true));
   window.KEYSTROKE_GAME = { renderTest, renderSection };

@@ -764,10 +764,16 @@
       status: "loading",
       message: "Checking sign-in availability…",
     };
-    const authUser = authState.user;
+    const authUser = authState.status === "signing-out" ? null : authState.user;
     const authCard = authUser
       ? `<section class="auth-card" aria-live="polite"><div class="auth-user">${authUser.photoURL ? `<img src="${authHtml(authUser.photoURL)}" alt="" referrerpolicy="no-referrer">` : `<span class="auth-avatar" aria-hidden="true">${authHtml((authUser.displayName || authUser.email || "?")[0]).toUpperCase()}</span>`}<div><strong>${authHtml(authUser.displayName || "Google user")}</strong><div class="hint">${authHtml(authUser.email || "")}</div></div></div><div class="auth-actions"><span class="hint">Signed in with Google. Your history and preferences remain stored on this device.</span><button id="googleSignOut" type="button" ${authState.status === "signing-out" ? "disabled" : ""}>${authState.status === "signing-out" ? "Signing out…" : "Sign out"}</button></div></section>`
-      : `<section class="auth-card" aria-live="polite"><div><strong>Sign in with Google</strong><p class="hint" id="authMessage">${authHtml(authState.message || "Your local profile stays available as a guest.")}</p></div><button id="googleSignIn" class="google-button" type="button" ${authState.canSignIn && authState.status !== "signing-in" ? "" : "disabled"}><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.89c-.58 2.96-2.26 5.48-4.76 7.18l7.73 6C44.37 37.96 46.98 31.94 46.98 24.55z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.91 23.91 0 0 0 0 24c0 3.88.93 7.55 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.8l-7.73-6c-2.14 1.44-4.88 2.3-8.17 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span>${authState.status === "signing-in" ? "Connecting…" : "Continue with Google"}</span></button></section>`;
+      : `<section class="auth-card" aria-live="polite"><div><strong>Sign in with Google</strong><p class="hint" id="authMessage">Sign in to access your account and profile.${authState.status === "error" ? ` ${authHtml(authState.message)}` : ""}</p></div><button id="googleSignIn" class="google-button" type="button" ${authState.canSignIn && !["signing-in", "signing-out"].includes(authState.status) ? "" : "disabled"}><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.89c-.58 2.96-2.26 5.48-4.76 7.18l7.73 6C44.37 37.96 46.98 31.94 46.98 24.55z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 0 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.91 23.91 0 0 0 0 24c0 3.88.93 7.55 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.8l-7.73-6c-2.14 1.44-4.88 2.3-8.17 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span>${authState.status === "signing-in" ? "Connecting…" : authState.status === "signing-out" ? "Please wait…" : "Continue with Google"}</span></button></section>`;
+    if (!authUser) {
+      $("#main").innerHTML = authCard;
+      if ($("#googleSignIn"))
+        $("#googleSignIn").onclick = () => window.KEYSTROKE_AUTH?.signIn();
+      return;
+    }
     const n = H.length,
       sum = (f) => H.reduce((a, h) => a + f(h), 0),
       tm = sum((h) => h.dur),
