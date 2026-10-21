@@ -920,6 +920,9 @@ ${n ? "" : '<div class="empty" style="margin:8px 0">No tests yet. The grid fills
   window.addEventListener("keystroke-personalization-changed", () => {
     if (view === "account") dAccount();
   });
+  window.addEventListener("keystroke-audio-library-ready", () => {
+    if (view === "studio") dStudio();
+  });
   /* wiring */
   VIEWS.splice(1, 0, ["themes", "Themes"]);
   VIEWS.splice(4, 0, ["account", "Account"]);

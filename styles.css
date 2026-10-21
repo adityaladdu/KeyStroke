@@ -432,11 +432,14 @@ th {
 .sound-assignments { grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); }
 .sound-assignment, .sound-card { display: grid; gap: 8px; }
 .sound-card { border: 1px solid var(--bd); border-radius: 8px; padding: 12px; }
+.sound-card.sel { border-color: var(--ac); }
 .sound-card-head, .sound-card-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .sound-card-head > div { display: grid; gap: 3px; }
 .sound-card-head small { color: var(--mu); }
 .sound-card-controls label { display: flex; align-items: center; gap: 6px; }
 .sound-card-controls input[type="range"] { width: min(120px,30vw); }
+.bundled-sounds { margin-top: 18px; }
+.bundled-sound-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
 .avatar-editor[hidden], #customSoundAssignments[hidden], #catSoundOptions[hidden] { display: none !important; }
 .avatar-choice:focus-visible, .personal-tabs button:focus-visible, #avatarCrop:focus-visible { outline: 2px solid var(--ac); outline-offset: 2px; }
 #tg.grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }

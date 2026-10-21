@@ -66,6 +66,18 @@
   let rotation = 0;
   let priorityTimer = 0;
   let ownerLoadSeq = 0;
+  let bundledSounds = [];
+  let bundledSoundsFailed = false;
+  fetch("audio-manifest.json")
+    .then((response) => response.ok ? response.json() : Promise.reject(new Error("Audio manifest unavailable")))
+    .then((manifest) => {
+      bundledSounds = Array.isArray(manifest.soundLibrary) ? manifest.soundLibrary : [];
+      window.dispatchEvent(new Event("keystroke-audio-library-ready"));
+    })
+    .catch(() => {
+      bundledSoundsFailed = true;
+      window.dispatchEvent(new Event("keystroke-audio-library-ready"));
+    });
   const state = {
     owner: "guest",
     profile: { owner: "guest", avatarKind: "builtin", avatarId: "cat", audio: emptyAudio() },
@@ -287,7 +299,7 @@
   function soundStudioMarkup() {
     const audio = { ...emptyAudio(), ...(state.profile.audio || {}) };
     const hasSounds = state.sounds.length > 0;
-    return `<section class="personal-card custom-sound-studio" aria-label="My Sounds"><h2>My Sounds</h2><p class="hint">Uploaded sounds stay in this browser profile. They do not replace the built-in keyboard presets.</p><div class="set"><label for="customSoundMode">Typing sound mode</label><select id="customSoundMode"><option value="presets" ${audio.mode === "presets" ? "selected" : ""}>Existing keyboard presets</option><option value="every" ${audio.mode === "every" ? "selected" : ""}>Every Keystroke</option><option value="random" ${audio.mode === "random" ? "selected" : ""}>Random Rotation</option><option value="alternate" ${audio.mode === "alternate" ? "selected" : ""}>Alternating Sounds</option><option value="special" ${audio.mode === "special" ? "selected" : ""}>Special Events</option><option value="cat" ${audio.mode === "cat" ? "selected" : ""}>Cat Mode — use your own meow</option></select></div><div class="set"><label for="soundCooldown">Sound cooldown</label><input id="soundCooldown" type="range" min="0" max="1000" step="25" value="${audio.cooldown ?? 80}" aria-label="Sound cooldown in milliseconds"><output id="soundCooldownValue">${audio.cooldown ?? 80} ms</output></div><div id="customSoundAssignments" ${audio.mode === "special" ? "" : "hidden"}><h3>Assign sounds to events</h3><div class="sound-assignments">${events.map((event) => soundSelect(event, audio)).join("")}</div></div><div id="catSoundOptions" ${audio.mode === "cat" ? "" : "hidden"}><p class="hint">Select any uploaded sound as the meow. No sample is bundled.</p><label><input type="checkbox" id="catIncorrect" ${audio.catIncorrect ? "checked" : ""}> Use a different sound for incorrect keys</label><select id="catIncorrectSound" aria-label="Cat Mode incorrect sound"><option value="">Choose an incorrect sound</option>${state.sounds.map((sound) => `<option value="${esc(sound.id)}" ${audio.catIncorrectId === sound.id ? "selected" : ""}>${esc(sound.name)}</option>`).join("")}</select><label><input type="checkbox" id="catWord" ${audio.catWord ? "checked" : ""}> Play an optional word-complete sound</label><select id="catWordSound" aria-label="Cat Mode word-complete sound"><option value="">Choose a word sound</option>${state.sounds.map((sound) => `<option value="${esc(sound.id)}" ${audio.catWordId === sound.id ? "selected" : ""}>${esc(sound.name)}</option>`).join("")}</select></div><div class="sound-upload"><label>Sound name<input id="newSoundName" type="text" maxlength="48" placeholder="Name your sound"></label><label class="avatar-upload-label">Upload audio<input id="customSoundFile" type="file" accept="audio/mpeg,audio/wav,audio/x-wav,audio/ogg,audio/webm"></label><div class="row"><button type="button" id="previewNewSound" disabled>Preview upload</button><button type="button" id="saveNewSound" class="pri" disabled>Save sound</button></div><p class="hint" id="customSoundMessage" role="status" aria-live="polite">${hasSounds ? "" : "No custom sounds yet. Upload an audio file to get started."}</p></div><div id="customSoundList" class="sound-library">${state.sounds.map((sound) => soundCard(sound, audio)).join("")}</div></section>`;
+    return `<section class="personal-card custom-sound-studio" aria-label="My Sounds"><h2>My Sounds</h2><p class="hint">Uploaded sounds stay in this browser profile. They do not replace the built-in keyboard presets.</p><div class="set"><label for="customSoundMode">Typing sound mode</label><select id="customSoundMode"><option value="presets" ${audio.mode === "presets" ? "selected" : ""}>Existing keyboard presets</option><option value="library" ${audio.mode === "library" ? "selected" : ""}>Unverified bundled clip</option><option value="every" ${audio.mode === "every" ? "selected" : ""}>Every Keystroke</option><option value="random" ${audio.mode === "random" ? "selected" : ""}>Random Rotation</option><option value="alternate" ${audio.mode === "alternate" ? "selected" : ""}>Alternating Sounds</option><option value="special" ${audio.mode === "special" ? "selected" : ""}>Special Events</option><option value="cat" ${audio.mode === "cat" ? "selected" : ""}>Cat Mode — use your own meow</option></select></div><div class="set"><label for="soundCooldown">Sound cooldown</label><input id="soundCooldown" type="range" min="0" max="1000" step="25" value="${audio.cooldown ?? 80}" aria-label="Sound cooldown in milliseconds"><output id="soundCooldownValue">${audio.cooldown ?? 80} ms</output></div>${bundledSoundMarkup(audio)}<div id="customSoundAssignments" ${audio.mode === "special" ? "" : "hidden"}><h3>Assign sounds to events</h3><div class="sound-assignments">${events.map((event) => soundSelect(event, audio)).join("")}</div></div><div id="catSoundOptions" ${audio.mode === "cat" ? "" : "hidden"}><p class="hint">Select any uploaded sound as the meow. No sample is bundled.</p><label><input type="checkbox" id="catIncorrect" ${audio.catIncorrect ? "checked" : ""}> Use a different sound for incorrect keys</label><select id="catIncorrectSound" aria-label="Cat Mode incorrect sound"><option value="">Choose an incorrect sound</option>${state.sounds.map((sound) => `<option value="${esc(sound.id)}" ${audio.catIncorrectId === sound.id ? "selected" : ""}>${esc(sound.name)}</option>`).join("")}</select><label><input type="checkbox" id="catWord" ${audio.catWord ? "checked" : ""}> Play an optional word-complete sound</label><select id="catWordSound" aria-label="Cat Mode word-complete sound"><option value="">Choose a word sound</option>${state.sounds.map((sound) => `<option value="${esc(sound.id)}" ${audio.catWordId === sound.id ? "selected" : ""}>${esc(sound.name)}</option>`).join("")}</select></div><div class="sound-upload"><label>Sound name<input id="newSoundName" type="text" maxlength="48" placeholder="Name your sound"></label><label class="avatar-upload-label">Upload audio<input id="customSoundFile" type="file" accept="audio/mpeg,audio/wav,audio/x-wav,audio/ogg,audio/webm"></label><div class="row"><button type="button" id="previewNewSound" disabled>Preview upload</button><button type="button" id="saveNewSound" class="pri" disabled>Save sound</button></div><p class="hint" id="customSoundMessage" role="status" aria-live="polite">${hasSounds ? "" : "No custom sounds yet. Upload an audio file to get started."}</p></div><div id="customSoundList" class="sound-library">${state.sounds.map((sound) => soundCard(sound, audio)).join("")}</div></section>`;
   }
 
   async function saveAudioSettings(changes) {
@@ -336,7 +348,7 @@
     container.replaceWith(holder.firstElementChild);
     bindSoundStudio();
   }
-  function previewBlob(id, blob, volume = 0.7) {
+  function previewBlob(id, media, volume = 0.7, onError = () => {}) {
     for (const [otherId, other] of soundPlayers) {
       if (otherId !== id) {
         other.pause();
@@ -345,18 +357,32 @@
     }
     let player = soundPlayers.get(id);
     if (!player) {
-      let url = soundUrls.get(id);
-      if (!url) {
-        url = URL.createObjectURL(blob);
-        soundUrls.set(id, url);
+      let source = typeof media === "string" ? media : soundUrls.get(id);
+      if (!source) {
+        source = URL.createObjectURL(media);
+        soundUrls.set(id, source);
       }
-      player = new Audio(url);
-      player.preload = "metadata";
+      player = new Audio(source);
+      player.preload = "auto";
       soundPlayers.set(id, player);
     }
-    player.volume = Math.max(0, Math.min(1, volume));
-    player.currentTime = 0;
-    player.play().catch(() => {});
+    try {
+      player.pause();
+      player.currentTime = 0;
+      player.volume = Math.max(0, Math.min(1, volume));
+      const playback = player.play();
+      playback?.catch(onError);
+    } catch {
+      onError();
+    }
+  }
+
+  function bundledSoundMarkup(audio) {
+    if (!bundledSounds.length) return bundledSoundsFailed ? `<p class="hint" role="status">The bundled audio catalog could not be loaded.</p>` : "";
+    return `<section class="bundled-sounds" aria-label="Bundled audio clips"><h3>Unverified clips</h3><p class="hint">These local MP3 files have not been listened to or identified. Preview each clip before selecting it. A selected clip restarts from the beginning on every eligible keypress.</p><div class="bundled-sound-grid">${bundledSounds.map((sound) => {
+      const active = audio.mode === "library" && audio.activeId === sound.id;
+      return `<article class="sound-card ${active ? "sel" : ""}"><div class="sound-card-head"><div><strong>${esc(sound.displayName)}</strong><small>${esc(sound.category)} · ${Number(sound.durationSeconds).toFixed(1)} sec</small></div></div><div class="sound-card-controls"><button type="button" data-preview-bundled="${esc(sound.id)}">Play preview</button><button type="button" data-stop-bundled="${esc(sound.id)}">Stop preview</button><button type="button" class="${active ? "on" : ""}" aria-pressed="${active}" data-select-bundled="${esc(sound.id)}">${active ? "Active" : "Use for typing"}</button></div></article>`;
+    }).join("")}</div></section>`;
   }
 
   function bindSoundStudio() {
@@ -397,6 +423,27 @@
       button.onclick = () => {
         const sound = state.sounds.find((item) => item.id === button.dataset.playCustom);
         if (sound) previewBlob(sound.id, sound.blob, sound.volume ?? 0.7);
+      };
+    });
+    document.querySelectorAll("[data-preview-bundled]").forEach((button) => {
+      button.onclick = () => {
+        const sound = bundledSounds.find((item) => item.id === button.dataset.previewBundled);
+        if (sound) previewBlob(sound.id, sound.src, 0.7, () => setSoundMessage("This MP3 could not be played by this browser."));
+      };
+    });
+    document.querySelectorAll("[data-stop-bundled]").forEach((button) => {
+      button.onclick = () => {
+        const player = soundPlayers.get(button.dataset.stopBundled);
+        if (!player) return;
+        try { player.pause(); player.currentTime = 0; } catch {}
+      };
+    });
+    document.querySelectorAll("[data-select-bundled]").forEach((button) => {
+      button.onclick = async () => {
+        const sound = bundledSounds.find((item) => item.id === button.dataset.selectBundled);
+        if (!sound) return;
+        if (!(await persist({ mode: "library", activeId: sound.id }))) return refreshSoundStudio();
+        refreshSoundStudio();
       };
     });
     document.querySelectorAll("[data-active-custom]").forEach((radio) => {
@@ -469,7 +516,16 @@
       previewButton.disabled = saveButton.disabled = false;
       setSoundMessage("Audio loaded. Preview it, name it, then save.");
     };
-    previewButton.onclick = () => pendingPreview?.play().catch(() => setSoundMessage("This audio format could not be previewed by your browser."));
+    previewButton.onclick = () => {
+      if (!pendingPreview) return;
+      try {
+        pendingPreview.pause();
+        pendingPreview.currentTime = 0;
+        pendingPreview.play()?.catch(() => setSoundMessage("This audio format could not be previewed by your browser."));
+      } catch {
+        setSoundMessage("This audio format could not be previewed by your browser.");
+      }
+    };
     saveButton.onclick = async () => {
       if (!pendingFile) return;
       const name = document.querySelector("#newSoundName").value.trim().slice(0, 48);
@@ -497,6 +553,7 @@
   function handlesTypingAudio(event = "correct") {
     const audio = { ...emptyAudio(), ...(state.profile.audio || {}) };
     if (audio.mode === "presets") return false;
+    if (audio.mode === "library") return ["correct", "incorrect", "backspace", "word"].includes(event) && bundledSounds.some((sound) => sound.id === audio.activeId);
     if (audio.mode === "every" || audio.mode === "cat") return state.sounds.some((sound) => sound.id === audio.activeId);
     if (audio.mode === "random" || audio.mode === "alternate") return ["correct", "incorrect", "backspace", "word"].includes(event) && (audio.collection || []).some((id) => state.sounds.some((sound) => sound.id === id));
     if (audio.mode === "special") return state.sounds.some((sound) => sound.id === audio.eventMap?.[event]);
@@ -508,6 +565,7 @@
     const audio = { ...emptyAudio(), ...(state.profile.audio || {}) };
     let id = "";
     if (audio.mode === "every") id = ["correct", "incorrect", "backspace", "word"].includes(event) ? audio.activeId : "";
+    else if (audio.mode === "library") id = audio.activeId;
     else if (audio.mode === "cat") {
       if (event === "incorrect" && audio.catIncorrect && audio.catIncorrectId) id = audio.catIncorrectId;
       else if (event === "word" && audio.catWord && audio.catWordId) id = audio.catWordId;
@@ -521,15 +579,16 @@
     } else if (audio.mode === "special") id = audio.eventMap?.[event] || "";
     if (!id) return;
     const now = performance.now();
-    const wait = Math.max(0, (Number(audio.cooldown) || 0) - (now - lastSoundAt));
+    const isKeypress = ["correct", "incorrect", "backspace", "word"].includes(event);
+    const wait = isKeypress ? 0 : Math.max(0, (Number(audio.cooldown) || 0) - (now - lastSoundAt));
     if (wait > 0) {
       if (priority && !priorityTimer) priorityTimer = window.setTimeout(() => { priorityTimer = 0; playTypingEvent(event, masterVolume, muted, false); }, wait);
       return;
     }
-    const sound = state.sounds.find((item) => item.id === id);
+    const sound = state.sounds.find((item) => item.id === id) || bundledSounds.find((item) => item.id === id);
     if (!sound) return;
     lastSoundAt = now;
-    previewBlob(sound.id, sound.blob, (Number(masterVolume) || 0) * (sound.volume ?? 0.7));
+    previewBlob(sound.id, sound.blob || sound.src, (Number(masterVolume) || 0) * (sound.volume ?? 0.7));
   }
 
   async function loadOwner() {

@@ -1,4 +1,23 @@
 {
+  "soundLibrary": [
+    { "id": "bundle-01", "src": "sounds/50986408-aa-with-reverb-meme-381632.mp3", "displayName": "Unverified clip 01", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 5.277, "sampleRateHz": 44100, "bitrateKbps": 256, "verified": false },
+    { "id": "bundle-02", "src": "sounds/apebble-fart-4-228244.mp3", "displayName": "Unverified clip 02", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 1.881, "sampleRateHz": 44100, "bitrateKbps": 256, "verified": false },
+    { "id": "bundle-03", "src": "sounds/dragon-studio-thud-sound-effect-405470.mp3", "displayName": "Unverified clip 03", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 3.109, "sampleRateHz": 44100, "bitrateKbps": 256, "verified": false },
+    { "id": "bundle-04", "src": "sounds/dragon-studio-typing-keyboard-asmr-356116.mp3", "displayName": "Unverified clip 04", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 8.098, "sampleRateHz": 44100, "bitrateKbps": 256, "verified": false },
+    { "id": "bundle-05", "src": "sounds/freesound_community-cat-89108.mp3", "displayName": "Unverified clip 05", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 3.960, "sampleRateHz": 8000, "bitrateKbps": 64, "verified": false },
+    { "id": "bundle-06", "src": "sounds/freesound_community-fart-83471.mp3", "displayName": "Unverified clip 06", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 0.648, "sampleRateHz": 24000, "bitrateKbps": 160, "verified": false },
+    { "id": "bundle-07", "src": "sounds/freesound_community-keyboard-typing-5997.mp3", "displayName": "Unverified clip 07", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 15.600, "sampleRateHz": 24000, "bitrateKbps": 160, "verified": false },
+    { "id": "bundle-08", "src": "sounds/freesound_community-typewriter-bell-100087.mp3", "displayName": "Unverified clip 08", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 5.112, "sampleRateHz": 24000, "bitrateKbps": 160, "verified": false },
+    { "id": "bundle-09", "src": "sounds/freesound_community-typewriter-machine-64191.mp3", "displayName": "Unverified clip 09", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 34.968, "sampleRateHz": 24000, "bitrateKbps": 160, "verified": false },
+    { "id": "bundle-10", "src": "sounds/freesound_community-typewriter-typing-68696.mp3", "displayName": "Unverified clip 10", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 27.816, "sampleRateHz": 24000, "bitrateKbps": 160, "verified": false },
+    { "id": "bundle-11", "src": "sounds/matthewvakaliuk73627-computer-keyboard-typing-290582.mp3", "displayName": "Unverified clip 11", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 10.083, "sampleRateHz": 44100, "bitrateKbps": 256, "verified": false },
+    { "id": "bundle-12", "src": "sounds/playzz-fah-491090.mp3", "displayName": "Unverified clip 12", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 1.776, "sampleRateHz": 44100, "bitrateKbps": 256, "verified": false },
+    { "id": "bundle-13", "src": "sounds/sarthakraj_308-typing-on-laptop-keyboard-308455.mp3", "displayName": "Unverified clip 13", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 27.744, "sampleRateHz": 48000, "bitrateKbps": 256, "verified": false },
+    { "id": "bundle-14", "src": "sounds/sea-you-later-typewriter-301419.mp3", "displayName": "Unverified clip 14", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 91.080, "sampleRateHz": 48000, "bitrateKbps": 256, "verified": false },
+    { "id": "bundle-15", "src": "sounds/soundreality-keyboard-typing-sfx-525007.mp3", "displayName": "Unverified clip 15", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 20.040, "sampleRateHz": 48000, "bitrateKbps": 256, "verified": false },
+    { "id": "bundle-16", "src": "sounds/universfield-yeah-boy-114748.mp3", "displayName": "Unverified clip 16", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 1.920, "sampleRateHz": 48000, "bitrateKbps": 256, "verified": false },
+    { "id": "bundle-17", "src": "sounds/virtualzero-mechanical-keyboard-typing-hd-372290.mp3", "displayName": "Unverified clip 17", "category": "Unverified", "format": "audio/mpeg", "durationSeconds": 8.046, "sampleRateHz": 44100, "bitrateKbps": 256, "verified": false }
+  ],
   "personalBestApplause": {
     "src": "assets/audio/personal-best-applause.mp3",
     "available": false,
