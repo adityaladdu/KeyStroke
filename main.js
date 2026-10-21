@@ -899,8 +899,24 @@ function draw() {
     focusInput();
   }
 }
+let leaderboardMode = "all";
 function dLeaderboard() {
-  $("#main").innerHTML = `<h2 style="margin-top:0">Leaderboard</h2><section class="empty" role="status"><b>Shared rankings aren’t connected yet.</b><p>This app currently saves typing history on this device. Google sign-in does not provide public score storage, so no global or friends rankings are shown.</p><p>Connect a secured, user-scoped shared data service before publishing leaderboard entries.</p></section>`;
+  const auth = window.KEYSTROKE_AUTH?.getState?.() || { status: "loading", user: null };
+  const user = auth.status === "signed-in" ? auth.user : null;
+  const escBoard = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const categories = [...new Set(H.map((entry) => entry.mode).filter(Boolean))];
+  if (leaderboardMode !== "all" && !categories.includes(leaderboardMode)) leaderboardMode = "all";
+  const results = H.filter((entry) => leaderboardMode === "all" || entry.mode === leaderboardMode);
+  const best = results.length ? Math.max(...results.map((entry) => Number(entry.wpm) || 0)) : 0;
+  const bestAccuracy = results.length ? Math.max(...results.map((entry) => Number(entry.acc) || 0)) : 0;
+  const rows = results.slice(-10).reverse();
+  const userCard = user
+    ? `<section class="personal-card leaderboard-local"><div class="auth-user">${window.KEYSTROKE_PERSONALIZATION?.avatarMarkup?.() || ""}<div><strong>${escBoard(user.displayName || "Google user")}</strong></div></div><p><b>Your results on this device</b></p><div class="stats"><div class="stat"><small>Tests</small><b>${results.length}</b></div><div class="stat"><small>Best WPM</small><b>${results.length ? Math.round(best) : "—"}</b></div><div class="stat"><small>Best accuracy</small><b>${results.length ? `${Math.round(bestAccuracy)}%` : "—"}</b></div></div><p class="hint">These results come from this device’s local typing history. They are not verified or attributed to your Google account, and no public ranking is available.</p><p class="hint"><b>Position:</b> Not ranked — shared leaderboard storage is not connected.</p></section>`
+    : "";
+  const filter = categories.length ? `<label class="row leaderboard-filter">Test category <select id="leaderboardMode" aria-label="Filter leaderboard by test category"><option value="all" ${leaderboardMode === "all" ? "selected" : ""}>All test types</option>${categories.map((mode) => `<option value="${escBoard(mode)}" ${leaderboardMode === mode ? "selected" : ""}>${escBoard(mode)}</option>`).join("")}</select></label>` : "";
+  const table = rows.length ? `<div class="leaderboard-table-wrap"><table><thead><tr><th>When</th><th>Test</th><th>WPM</th><th>Accuracy</th></tr></thead><tbody>${rows.map((entry) => `<tr><td>${new Date(entry.t).toLocaleString()}</td><td>${escBoard(entry.mode)}</td><td>${Math.round(Number(entry.wpm) || 0)}</td><td>${Math.round(Number(entry.acc) || 0)}%</td></tr>`).join("")}</tbody></table></div>` : `<div class="empty">No local typing results${leaderboardMode === "all" ? " yet" : ` for ${escBoard(leaderboardMode)}`}.</div>`;
+  $("#main").innerHTML = `<h2 style="margin-top:0">Leaderboard</h2>${userCard}${user ? `${filter}${table}` : `<section class="empty" role="status"><b>Shared rankings aren’t connected yet.</b><p>This app stores typing history on this device. Google sign-in does not provide shared score storage, so global and friends rankings are unavailable.</p></section>`}`;
+  if ($("#leaderboardMode")) $("#leaderboardMode").onchange = (event) => { leaderboardMode = event.target.value; dLeaderboard(); };
 }
 function dTest() {
   const tm = [
