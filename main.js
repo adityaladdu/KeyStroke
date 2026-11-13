@@ -487,11 +487,6 @@ function correctN() {
   for (let i = 0; i < T.typed.length; i++) if (T.typed[i] === T.text[i]) c++;
   return c;
 }
-function miniGameProgressDetail() {
-  return {
-    progress: T.text.length ? correctN() / T.text.length : 0,
-  };
-}
 function metrics(sec) {
   const m = Math.max(sec, 1 / 60) / 60,
     c = correctN();
@@ -516,7 +511,6 @@ function newTest() {
     samples: [],
     t0: 0,
   });
-  window.dispatchEvent(new Event("keystroke-test-reset"));
   if (view === "test") renderText();
 }
 function renderText() {
@@ -605,7 +599,6 @@ function press(ch) {
   const s = T.spans[i];
   s.className = ok ? "c" : "w";
   mark(i + 1);
-  window.dispatchEvent(new CustomEvent("keystroke-test-progress", { detail: miniGameProgressDetail() }));
   if (P.press) window.KEYSTROKE_PERSONALIZATION?.playTypingEvent(ok && ch === " " ? "word" : ok ? "correct" : "incorrect", P.vol, P.mute);
   if (T.typed.length >= T.text.length) finish();
 }
@@ -614,7 +607,6 @@ function back() {
   T.typed.pop();
   T.spans[T.typed.length].className = "";
   mark(T.typed.length);
-  window.dispatchEvent(new CustomEvent("keystroke-test-progress", { detail: miniGameProgressDetail() }));
   if (P.press) window.KEYSTROKE_PERSONALIZATION?.playTypingEvent("backspace", P.vol, P.mute);
 }
 function tick() {
@@ -668,7 +660,6 @@ function finish() {
   let e = elapsed();
   if (P.mode === "time") e = Math.min(e, P.dur);
   T.st = "completed";
-  window.dispatchEvent(new CustomEvent("keystroke-test-complete", { detail: miniGameProgressDetail() }));
   T.dur = e;
   const m = metrics(e);
   if (P.mode === "time" || T.samples.length < 2) T.samples.push(m.wpm);
@@ -844,6 +835,7 @@ function go(v) {
     T.st = "aborted";
   }
   view = v;
+  window.dispatchEvent(new CustomEvent("keystroke-view-change", { detail: v }));
   draw();
 }
 function drawNav() {
@@ -944,7 +936,6 @@ function dTest() {
     )}</select><button id="rs" aria-label="Restart (Tab)">↻ Restart</button></div>
  <div class="stats" aria-label="Live statistics"><div class="stat"><small>WPM</small><b id="s_wpm">0</b></div><div class="stat"><small>Accuracy</small><b id="s_acc">100%</b></div><div class="stat"><small>Raw</small><b id="s_raw">0</b></div><div class="stat"><small>${P.mode === "time" ? "Time left" : "Words"}</small><b id="s_t">0</b></div><div class="stat"><small>Best</small><b>${H.length ? Math.round(Math.max(...H.map((h) => h.wpm))) : "—"}</b></div></div>
  <div id="box" class="blur"><div id="txt" aria-label="Text to type"></div><div id="msg">Click here to focus</div></div>
- <div id="miniGameTrack" hidden></div>
  <div class="hint" id="hint">Start typing to begin.</div>
  <div class="sp"></div><div class="row">${presetSel("pSel")}<button id="pPrev">Preview</button><label class="row" style="color:var(--tx2)">Volume <input type="range" id="vol" min="0" max="1" step=".05" value="${P.vol}" aria-label="Volume"></label></div>
  <p class="hint"><kbd>Tab</kbd> restart · <kbd>Esc</kbd> close dialog · <kbd>Alt</kbd>+<kbd>M</kbd> mute · Sounds are synthesized (no recordings bundled).</p>`;
@@ -993,7 +984,6 @@ function dTest() {
     save();
   };
   $("#box").onclick = focusInput;
-  window.KEYSTROKE_GAME?.renderTest?.();
 }
 function swIcon() {
   return `<svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="5" y="5" width="30" height="26" rx="6"/><rect x="10" y="9" width="20" height="14" rx="3" opacity=".5"/><path d="M12 35h16" opacity=".4"/></svg>`;
