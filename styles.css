@@ -497,6 +497,16 @@ th {
 .sprint-stats small { display: block; color: var(--tx2); font-size: 10px; font-weight: 700; letter-spacing: .12em; }
 .sprint-stats strong { display: block; margin-top: 3px; color: var(--tx); font-size: 23px; font-variant-numeric: tabular-nums; }
 .sprint-stats > div:first-child strong { color: var(--game-leaf); }
+.sprint-race { margin-bottom: 16px; padding: 14px 16px 8px; border: 1px solid var(--bd); border-radius: 11px; background: var(--el); }
+.sprint-race-label { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 9px; color: var(--tx2); font-size: 10px; font-weight: 750; letter-spacing: .12em; }
+.sprint-race-label span:last-child { color: var(--game-leaf); font-variant-numeric: tabular-nums; }
+.sprint-track { position: relative; height: 86px; overflow: hidden; border-radius: 8px; background: var(--bg); }
+.sprint-finish { position: absolute; z-index: 1; top: 8px; right: 5%; color: var(--mu); font-size: 10px; letter-spacing: .1em; }
+.sprint-track::after { position: absolute; top: 8px; right: 4%; bottom: 18px; width: 10px; border-right: 2px dashed var(--game-leaf); content: ""; opacity: .7; }
+.sprint-track-line { position: absolute; right: 0; bottom: 17px; left: 0; border-top: 2px dashed var(--bd); }
+.sprint-racer { position: absolute; z-index: 2; bottom: 21px; display: flex; align-items: center; justify-content: center; width: 54px; height: 42px; transform: translateX(-50%); transition: left 240ms cubic-bezier(.2,.75,.25,1); }
+.sprint-racer svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.sprint-race-caption { margin: 6px 0 0; color: var(--tx2); text-align: center; font-size: 12px; }
 .sprint-play-area { position: relative; margin-bottom: 16px; padding: 20px 22px 12px; border: 1px solid var(--bd); border-radius: 12px; background: var(--bg); }
 .sprint-words { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 40px; margin-bottom: 14px; }
 .game-word { padding: 5px 10px; border: 1px solid transparent; border-radius: 6px; color: var(--mu); font-size: clamp(16px, 2vw, 19px); font-weight: 550; letter-spacing: .01em; }
@@ -515,16 +525,23 @@ th {
 .sprint-result { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 10px; padding: 12px 14px; border-left: 3px solid var(--game-leaf); background: color-mix(in srgb, var(--game-green) 14%, var(--bg2)); }
 .sprint-result b { color: var(--game-leaf); }
 .sprint-result span { color: var(--tx2); font-size: 13px; }
-.game-keyboard { display: flex; flex-direction: column; gap: 6px; padding: clamp(9px, 1.8vw, 16px); border: 1px solid #77747b; border-radius: 13px; background: #55535a; box-shadow: inset 0 1px 0 #85828a; }
+.game-keyboard { display: flex; flex-direction: column; gap: 6px; padding: clamp(9px, 1.8vw, 16px); border: 1px solid var(--bd); border-radius: 13px; background: var(--el); box-shadow: inset 0 1px 0 var(--bd); }
 .game-key-row { display: flex; justify-content: center; gap: clamp(3px, .55vw, 6px); }
-.game-key { flex: 1 1 0; min-width: 0; height: clamp(34px, 5.2vw, 48px); padding: 0 3px; border: 1px solid #b9b9b7; border-bottom-width: 3px; border-radius: 6px; background: #e4e4e1; color: #343936; font: 600 clamp(11px, 1.4vw, 14px)/1 ui-monospace, SFMono-Regular, Consolas, monospace; box-shadow: 0 1px 0 rgba(0,0,0,.15); transition: background .08s, color .08s, transform .08s, border-color .08s; }
-.game-key:hover { border-color: var(--game-leaf); background: var(--game-cream); color: #263322; }
-.game-key.is-next { border-color: var(--game-leaf); background: var(--game-leaf); color: #10210e; box-shadow: 0 0 0 2px color-mix(in srgb, var(--game-leaf) 34%, transparent); }
-.game-key.is-pressed { transform: translateY(2px); border-bottom-width: 1px; background: var(--game-green); color: #fff; }
+.game-key { flex: 1 1 0; min-width: 0; height: clamp(34px, 5.2vw, 48px); padding: 0 3px; border: 1px solid var(--bd); border-bottom-width: 3px; border-radius: 6px; background: var(--bg2); color: var(--tx); font: 600 clamp(11px, 1.4vw, 14px)/1 ui-monospace, SFMono-Regular, Consolas, monospace; box-shadow: 0 1px 0 color-mix(in srgb, var(--bd) 65%, transparent); transition: background .08s, color .08s, transform .08s, border-color .08s; }
+.game-key:hover { border-color: var(--ac); background: var(--el); color: var(--tx); }
+.game-key.is-next { border-color: var(--ac); background: color-mix(in srgb, var(--ac) 28%, var(--bg2)); color: var(--tx); box-shadow: 0 0 0 2px color-mix(in srgb, var(--ac) 24%, transparent); }
+.game-key.is-pressed { transform: translateY(2px); border-bottom-width: 1px; background: var(--ac); color: var(--bg); }
 .game-key.key-wide { flex-grow: 1.65; }
-.game-key.key-mod { flex-grow: 1.35; color: #59615b; font-size: 10px; }
+.game-key.key-mod { flex-grow: 1.35; color: var(--tx2); font-size: 10px; }
 .game-key.key-space { flex-grow: 5.5; }
 .game-key.key-arrow { flex-grow: .8; }
+.test-keyboard { margin: 18px 0; padding: 16px; border: 1px solid var(--bd); border-radius: 12px; background: var(--el); }
+.test-keyboard-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+.test-keyboard-heading > div { display: flex; flex-direction: column; gap: 2px; }
+.test-keyboard-heading b { color: var(--tx); font-size: 14px; }
+.test-keyboard-heading span { color: var(--tx2); font-size: 12px; }
+.test-keyboard-next { white-space: nowrap; }
+.test-keyboard-next strong { margin-left: 5px; color: var(--ac); font-size: 15px; }
 .sprint-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 13px; color: var(--tx2); font-size: 11px; }
 .sprint-footer > span:first-child { display: flex; align-items: center; gap: 7px; color: var(--game-leaf); font-size: 10px; font-weight: 750; letter-spacing: .1em; }
 .game-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--game-leaf); }
@@ -545,10 +562,13 @@ body:not(.focus-mode) header { transition: max-height .18s ease, opacity .18s ea
   .sprint-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .sprint-stats > div { padding: 9px 11px; }
   .sprint-stats strong { font-size: 20px; }
+  .sprint-race { padding: 12px 12px 8px; }
   .sprint-play-area { padding: 14px 12px 8px; }
   .sprint-footer { align-items: flex-start; flex-direction: column; }
   .game-keyboard { overflow-x: auto; }
   .game-key-row { min-width: 530px; }
+  .test-keyboard { padding: 12px; }
+  .test-keyboard-heading { flex-wrap: wrap; }
   header { position: sticky; top: 0; z-index: 50; gap: 8px; padding: 8px 12px; min-height: 56px; }
   .logo { font-size: 15px; }
   #navToggle { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; min-height: 44px; margin-left: auto; }
